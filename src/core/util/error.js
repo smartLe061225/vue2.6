@@ -47,7 +47,7 @@ export function invokeWithErrorHandling (
       res.catch(e => handleError(e, vm, info + ` (Promise/async)`))
       // issue #9511
       // avoid catch triggering multiple times when nested calls
-      res._handled = true
+      res._handled = true // _handled仅在本函数2处用到
     }
   } catch (e) {
     handleError(e, vm, info)
@@ -69,7 +69,6 @@ function globalHandleError (err, vm, info) {
   }
   logError(err, vm, info)
 }
-
 function logError (err, vm, info) {
   if (process.env.NODE_ENV !== 'production') {
     warn(`Error in ${info}: "${err.toString()}"`, vm)
