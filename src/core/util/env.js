@@ -36,7 +36,7 @@ if (inBrowser) {
 
 // this needs to be lazy-evaled because vue may be required before
 // vue-server-renderer can set VUE_ENV
-// 。VUE_ENV仅在文件src/platforms/web/entry-server-renderer.js中唯一设置
+// VUE_ENV仅在文件src/platforms/web/entry-server-renderer.js中唯一设置
 let _isServer
 export const isServerRendering = () => {
   if (_isServer === undefined) {
