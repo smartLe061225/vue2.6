@@ -1,6 +1,6 @@
 /* @flow */
 
-process.env.VUE_ENV = 'server'
+process.env.VUE_ENV = 'server' // VUE_ENV仅在此处唯一设置
 
 import { extend } from 'shared/util'
 import modules from './server/modules/index'
