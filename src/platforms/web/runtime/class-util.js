@@ -6,6 +6,8 @@ const whitespaceRE = /\s+/
  * Add class with compatibility for SVG since classList is not supported on
  * SVG elements in IE
  */
+// 仅调用被addTransitionClass方法：src/platforms/web/runtime/transition-util.js
+// 仅调用被hasMove方法：src/platforms/web/runtime/components/transition-group.js
 export function addClass (el: HTMLElement, cls: ?string) {
   /* istanbul ignore if */
   if (!cls || !(cls = cls.trim())) {
@@ -31,6 +33,8 @@ export function addClass (el: HTMLElement, cls: ?string) {
  * Remove class with compatibility for SVG since classList is not supported on
  * SVG elements in IE
  */
+// 仅调用被removeTransitionClass方法：src/platforms/web/runtime/transition-util.js
+// 仅调用被hasMove方法：src/platforms/web/runtime/components/transition-group.js
 export function removeClass (el: HTMLElement, cls: ?string) {
   /* istanbul ignore if */
   if (!cls || !(cls = cls.trim())) {

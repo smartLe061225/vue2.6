@@ -13,6 +13,7 @@ if (process.env.NODE_ENV !== 'production') {
     'require' // for Webpack/Browserify
   )
 
+  // non-present: 不存在的，不在场的：
   const warnNonPresent = (target, key) => {
     warn(
       `Property or method "${key}" is not defined on the instance but ` +
@@ -25,6 +26,7 @@ if (process.env.NODE_ENV !== 'production') {
   }
 
   const warnReservedPrefix = (target, key) => {
+    // Property "el" must be accessed with "$data.el" because 
     warn(
       `Property "${key}" must be accessed with "$data.${key}" because ` +
       'properties starting with "$" or "_" are not proxied in the Vue instance to ' +
@@ -50,6 +52,51 @@ if (process.env.NODE_ENV !== 'production') {
         }
       }
     })
+    // 测试1：
+    // Vue.config.keyCodes.xxx = 12
+    // Vue.config.keyCodes.stop = 24 // [Vue warn]: Avoid overwriting built-in modifier in config.keyCodes: .stop
+    // Vue.config.keyCodes // Proxy(Object) {xxx: 12}
+    // 测试2：
+    // Vue.config.keyCodes = { xxx: 12 }
+    // Vue.config.keyCodes.stop = 24
+    // Vue.config.keyCodes // {xxx: 12, stop: 24}
+    // 测试3：
+    // Vue.config.keyCodes = {
+    //   xxx: 97,
+    //   // v: 86, // 按键a/A会触发@keyup.86 & @keyup.v
+    //   v: 118, // 按键a/A只会触发@keyup.86
+    //   f1: 112,
+    //   // camelCase 不可用
+    //   mediaPlayPause: 179,
+    //   // 取而代之的是 kebab-case 且用双引号括起来
+    //   "media-play-pause": 179,
+    //   up: [38, 87] // 【&， w】 仅按键w/W会触发
+    // }
+    // <!-- error  'v-on' directives don't support the modifier 'xxx'  vue/valid-v-on -->
+    // <!-- <input type="text" @keyup.xxx="keyupHandle($event, 'xxx')" /><br/> -->
+    // <input type="text" @keyup.a="keyupHandle($event, 'a')" /><br/>
+    // <input type="text" @keyup.97="keyupHandle($event, 97)" /><br/>
+    // <input type="text" @keyup.A="keyupHandle($event, 'A')" /><br/>
+    // <input type="text" @keyup.65="keyupHandle($event, 65)" /><br/>
+    // <input type="text" @keyup.v="keyupHandle($event, 'v')" /><br/>
+    // <input type="text" @keyup.118="keyupHandle($event, 118)" /><br/>
+    // <input type="text" @keyup.V="keyupHandle($event, 'V')" /><br/>
+    // <input type="text" @keyup.86="keyupHandle($event, 86)" /><br/>
+    // <input type="text" @keyup.f1="keyupHandle($event, 'f1')" /><br/>
+    // <input type="text" @keyup.112="keyupHandle($event, 112)" /><br/>
+    // <input type="text" @keyup.media-play-pause="keyupHandle($event, 'media-play-pause')" /><br/>
+    // <input type="text" @keyup.up="keyupHandle($event, 'up')" /><br/>
+    // <input type="text" @keyup.&="keyupHandle($event, '&')" /><br/>
+    // <!-- 结论：无论caps lock键是否选中，按键a/A对应的按键码均为65，因此按键a/A均会触发@keyup.a/@keyup.65 -->
+    // {
+    //   ...
+    //   methods: {
+    //     keyupHandle(evt, val) {
+    //       console.log(evt.keyCode, val)
+    //     }
+    //   },
+    //   。。。
+    // }
   }
 
   const hasHandler = {

@@ -8,7 +8,7 @@ function locateNode (vnode: VNode): VNodeWithData {
     ? locateNode(vnode.componentInstance._vnode)
     : vnode
 }
-
+// 仅引用被文件：./index.js
 export default {
   bind (el: any, { value }: VNodeDirective, vnode: VNodeWithData) {
     vnode = locateNode(vnode)

@@ -44,7 +44,6 @@ function createOnceHandler (event, handler, capture) {
 // implementation and does not fire microtasks in between event propagation, so
 // safe to exclude.
 const useMicrotaskFix = isUsingMicroTask && !(isFF && Number(isFF[1]) <= 53)
-
 function add (
   name: string,
   handler: Function,
@@ -117,6 +116,7 @@ function updateDOMListeners (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   target = undefined
 }
 
+// 仅引用被文件：./index.js
 export default {
   create: updateDOMListeners,
   update: updateDOMListeners,

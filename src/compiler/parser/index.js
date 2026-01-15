@@ -72,6 +72,19 @@ export function createASTElement (
     children: []
   }
 }
+function makeAttrsMap (attrs: Array<Object>): Object {
+  const map = {}
+  for (let i = 0, l = attrs.length; i < l; i++) {
+    if (
+      process.env.NODE_ENV !== 'production' &&
+      map[attrs[i].name] && !isIE && !isEdge
+    ) {
+      warn('duplicate attribute: ' + attrs[i].name, attrs[i])
+    }
+    map[attrs[i].name] = attrs[i].value
+  }
+  return map
+}
 
 /**
  * Convert HTML string to AST.
@@ -430,6 +443,117 @@ function processRawAttrs (el) {
   }
 }
 
+export function processFor (el: ASTElement) {
+  let exp
+  if ((exp = getAndRemoveAttr(el, 'v-for'))) {
+    const res = parseFor(exp)
+    if (res) {
+      extend(el, res)
+    } else if (process.env.NODE_ENV !== 'production') {
+      warn(
+        `Invalid v-for expression: ${exp}`,
+        el.rawAttrsMap['v-for']
+      )
+    }
+  }
+}
+type ForParseResult = {
+  for: string;
+  alias: string;
+  iterator1?: string;
+  iterator2?: string;
+};
+export function parseFor (exp: string): ?ForParseResult {
+  const inMatch = exp.match(forAliasRE)
+  if (!inMatch) return
+  const res = {}
+  res.for = inMatch[2].trim()
+  const alias = inMatch[1].trim().replace(stripParensRE, '')
+  const iteratorMatch = alias.match(forIteratorRE)
+  if (iteratorMatch) {
+    res.alias = alias.replace(forIteratorRE, '').trim()
+    res.iterator1 = iteratorMatch[1].trim()
+    if (iteratorMatch[2]) {
+      res.iterator2 = iteratorMatch[2].trim()
+    }
+  } else {
+    res.alias = alias
+  }
+  return res
+}
+
+function processIf (el) {
+  const exp = getAndRemoveAttr(el, 'v-if')
+  if (exp) {
+    el.if = exp
+    addIfCondition(el, {
+      exp: exp,
+      block: el
+    })
+  } else {
+    if (getAndRemoveAttr(el, 'v-else') != null) {
+      el.else = true
+    }
+    const elseif = getAndRemoveAttr(el, 'v-else-if')
+    if (elseif) {
+      el.elseif = elseif
+    }
+  }
+}
+
+function processOnce (el) {
+  const once = getAndRemoveAttr(el, 'v-once')
+  if (once != null) {
+    el.once = true
+  }
+}
+
+
+
+
+function processIfConditions (el, parent) {
+  const prev = findPrevElement(parent.children)
+  if (prev && prev.if) {
+    addIfCondition(prev, {
+      exp: el.elseif,
+      block: el
+    })
+  } else if (process.env.NODE_ENV !== 'production') {
+    warn(
+      `v-${el.elseif ? ('else-if="' + el.elseif + '"') : 'else'} ` +
+      `used on element <${el.tag}> without corresponding v-if.`,
+      el.rawAttrsMap[el.elseif ? 'v-else-if' : 'v-else']
+    )
+  }
+}
+function findPrevElement (children: Array<any>): ASTElement | void {
+  let i = children.length
+  while (i--) {
+    if (children[i].type === 1) {
+      return children[i]
+    } else {
+      if (process.env.NODE_ENV !== 'production' && children[i].text !== ' ') {
+        warn(
+          `text "${children[i].text.trim()}" between v-if and v-else(-if) ` +
+          `will be ignored.`,
+          children[i]
+        )
+      }
+      children.pop()
+    }
+  }
+}
+
+export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
+  if (!el.ifConditions) {
+    el.ifConditions = []
+  }
+  el.ifConditions.push(condition)
+}
+
+
+
+
 export function processElement (
   element: ASTElement,
   options: CompilerOptions
@@ -483,119 +607,21 @@ function processKey (el) {
 }
 
 function processRef (el) {
-  const ref = getBindingAttr(el, 'ref')
+  const ref = getBindingAttr(el, 'ref') // 非动态绑定的attrs会进行JSON字符串序列号
   if (ref) {
     el.ref = ref
     el.refInFor = checkInFor(el)
   }
 }
-
-export function processFor (el: ASTElement) {
-  let exp
-  if ((exp = getAndRemoveAttr(el, 'v-for'))) {
-    const res = parseFor(exp)
-    if (res) {
-      extend(el, res)
-    } else if (process.env.NODE_ENV !== 'production') {
-      warn(
-        `Invalid v-for expression: ${exp}`,
-        el.rawAttrsMap['v-for']
-      )
+function checkInFor (el: ASTElement): boolean {
+  let parent = el
+  while (parent) {
+    if (parent.for !== undefined) {
+      return true
     }
+    parent = parent.parent
   }
-}
-
-type ForParseResult = {
-  for: string;
-  alias: string;
-  iterator1?: string;
-  iterator2?: string;
-};
-
-export function parseFor (exp: string): ?ForParseResult {
-  const inMatch = exp.match(forAliasRE)
-  if (!inMatch) return
-  const res = {}
-  res.for = inMatch[2].trim()
-  const alias = inMatch[1].trim().replace(stripParensRE, '')
-  const iteratorMatch = alias.match(forIteratorRE)
-  if (iteratorMatch) {
-    res.alias = alias.replace(forIteratorRE, '').trim()
-    res.iterator1 = iteratorMatch[1].trim()
-    if (iteratorMatch[2]) {
-      res.iterator2 = iteratorMatch[2].trim()
-    }
-  } else {
-    res.alias = alias
-  }
-  return res
-}
-
-function processIf (el) {
-  const exp = getAndRemoveAttr(el, 'v-if')
-  if (exp) {
-    el.if = exp
-    addIfCondition(el, {
-      exp: exp,
-      block: el
-    })
-  } else {
-    if (getAndRemoveAttr(el, 'v-else') != null) {
-      el.else = true
-    }
-    const elseif = getAndRemoveAttr(el, 'v-else-if')
-    if (elseif) {
-      el.elseif = elseif
-    }
-  }
-}
-
-function processIfConditions (el, parent) {
-  const prev = findPrevElement(parent.children)
-  if (prev && prev.if) {
-    addIfCondition(prev, {
-      exp: el.elseif,
-      block: el
-    })
-  } else if (process.env.NODE_ENV !== 'production') {
-    warn(
-      `v-${el.elseif ? ('else-if="' + el.elseif + '"') : 'else'} ` +
-      `used on element <${el.tag}> without corresponding v-if.`,
-      el.rawAttrsMap[el.elseif ? 'v-else-if' : 'v-else']
-    )
-  }
-}
-
-function findPrevElement (children: Array<any>): ASTElement | void {
-  let i = children.length
-  while (i--) {
-    if (children[i].type === 1) {
-      return children[i]
-    } else {
-      if (process.env.NODE_ENV !== 'production' && children[i].text !== ' ') {
-        warn(
-          `text "${children[i].text.trim()}" between v-if and v-else(-if) ` +
-          `will be ignored.`,
-          children[i]
-        )
-      }
-      children.pop()
-    }
-  }
-}
-
-export function addIfCondition (el: ASTElement, condition: ASTIfCondition) {
-  if (!el.ifConditions) {
-    el.ifConditions = []
-  }
-  el.ifConditions.push(condition)
-}
-
-function processOnce (el) {
-  const once = getAndRemoveAttr(el, 'v-once')
-  if (once != null) {
-    el.once = true
-  }
+  return false
 }
 
 // handle content being passed to a component as slot,
@@ -714,7 +740,6 @@ function processSlotContent (el) {
     }
   }
 }
-
 function getSlotName (binding) {
   let name = binding.name.replace(slotRE, '')
   if (!name) {
@@ -895,18 +920,6 @@ function processAttrs (el) {
     }
   }
 }
-
-function checkInFor (el: ASTElement): boolean {
-  let parent = el
-  while (parent) {
-    if (parent.for !== undefined) {
-      return true
-    }
-    parent = parent.parent
-  }
-  return false
-}
-
 function parseModifiers (name: string): Object | void {
   const match = name.match(modifierRE)
   if (match) {
@@ -915,52 +928,6 @@ function parseModifiers (name: string): Object | void {
     return ret
   }
 }
-
-function makeAttrsMap (attrs: Array<Object>): Object {
-  const map = {}
-  for (let i = 0, l = attrs.length; i < l; i++) {
-    if (
-      process.env.NODE_ENV !== 'production' &&
-      map[attrs[i].name] && !isIE && !isEdge
-    ) {
-      warn('duplicate attribute: ' + attrs[i].name, attrs[i])
-    }
-    map[attrs[i].name] = attrs[i].value
-  }
-  return map
-}
-
-// for script (e.g. type="x/template") or style, do not decode content
-function isTextTag (el): boolean {
-  return el.tag === 'script' || el.tag === 'style'
-}
-
-function isForbiddenTag (el): boolean {
-  return (
-    el.tag === 'style' ||
-    (el.tag === 'script' && (
-      !el.attrsMap.type ||
-      el.attrsMap.type === 'text/javascript'
-    ))
-  )
-}
-
-const ieNSBug = /^xmlns:NS\d+/
-const ieNSPrefix = /^NS\d+:/
-
-/* istanbul ignore next */
-function guardIESVGBug (attrs) {
-  const res = []
-  for (let i = 0; i < attrs.length; i++) {
-    const attr = attrs[i]
-    if (!ieNSBug.test(attr.name)) {
-      attr.name = attr.name.replace(ieNSPrefix, '')
-      res.push(attr)
-    }
-  }
-  return res
-}
-
 function checkForAliasModel (el, value) {
   let _el = el
   while (_el) {
@@ -976,4 +943,53 @@ function checkForAliasModel (el, value) {
     }
     _el = _el.parent
   }
+}
+
+
+
+const ieNSBug = /^xmlns:NS\d+/
+const ieNSPrefix = /^NS\d+:/
+/* istanbul ignore next */
+function guardIESVGBug (attrs) {
+  const res = []
+  for (let i = 0; i < attrs.length; i++) {
+    const attr = attrs[i]
+    if (!ieNSBug.test(attr.name)) {
+      attr.name = attr.name.replace(ieNSPrefix, '')
+      res.push(attr)
+    }
+  }
+  return res
+}
+// 'xmlns:NS'.replace(/^xmlns:NS\d+/, '=') // 'xmlns:NS'
+// 'xmlns:NS1'.replace(/^xmlns:NS\d+/, '=') // '='
+// let attrs = [
+//   { name: 'xmlns:NS', value: 'foo' },
+//   { name: 'xmlns:NS12', value: 'bar' },
+//   { name: 'xmlns:NS12:', value: 'baz' },
+//   { name: 'NS', value: 'qux' },
+//   { name: 'NS12', value: 'quxx' },
+//   { name: 'NS12:', value: 'corge' },
+// ]
+// guardIESVGBug(attrs)
+// [
+//   { name: 'xmlns:NS', value: 'foo' },
+//   { name: 'NS', value: 'qux' },
+//   { name: 'NS12', value: 'quxx' },
+//   { name: '', value: 'corge' },
+// ]
+
+function isForbiddenTag (el): boolean {
+  return (
+    el.tag === 'style' ||
+    (el.tag === 'script' && (
+      !el.attrsMap.type ||
+      el.attrsMap.type === 'text/javascript'
+    ))
+  )
+}
+
+// for script (e.g. type="x/template") or style, do not decode content
+function isTextTag (el): boolean {
+  return el.tag === 'script' || el.tag === 'style'
 }

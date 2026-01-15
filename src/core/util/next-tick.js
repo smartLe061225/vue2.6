@@ -18,6 +18,14 @@ function flushCallbacks () {
     copies[i]()
   }
 }
+// let arr1 = [1, 3, 5]
+// let arr2 = arr1
+// arr1.length = 0
+// console.error(arr1, arr2) // [] []
+// let arr3 = [1, 3, 5]
+// let arr4 = arr3.slice()
+// arr3.length = 0
+// console.error(arr3, arr4) // [] [1, 3, 5]
 
 // Here we have async deferring wrappers using microtasks.
 // In 2.5 we used (macro) tasks (in combination with microtasks).
@@ -108,3 +116,117 @@ export function nextTick (cb?: Function, ctx?: Object) {
     })
   }
 }
+// 将同一时刻的多个任务放在同一微任务队列中/异步任务队列中执行
+// // 1.简易版：立即将任务队列添加到微任务中
+// let callbacks = [] // 任务队列
+// function nextTick(cb) { // 添加任务队列
+// 	callbacks.push(cb)
+// }
+// function run() { // 执行微任务队列
+// 	callbacks.forEach(cb => {
+// 		cb()
+// 	})
+// }
+// Promise.resolve().then(run) // 立即将任务队列添加到微任务中
+// // 测试：必须立刻调用nextTick方法
+// nextTick(() => console.log(11)) // 11
+// nextTick(() => console.log(22)) // 22
+// setTimeout(() => {
+// 	nextTick(() => console.log(33)) //
+// 	nextTick(() => console.log(44)) //
+// }, 3000)
+
+// // 2.改进版：在nextTick函数内将任务队列添加到微任务中
+// let callbacks = [] // 任务队列
+// function nextTick(cb) { // 添加任务队列
+// 	callbacks.push(cb)
+// 	p.then(run)
+// }
+// function run() { // 执行微任务队列
+// 	callbacks.forEach(cb => {
+// 		cb()
+// 	})
+// }
+// let p = Promise.resolve()
+// // 测试：任务队列被多次添加到微任务中
+// nextTick(() => console.log(11))
+// nextTick(() => console.log(22))
+// // 11 22 11 22
+// setTimeout(() => {
+// 	nextTick(() => console.log(33))
+// 	nextTick(() => console.log(44))
+// 	// 11 22 33 44 11 22 33 44
+// }, 3000)
+
+// // 3.最终版：在nextTick函数内任务队列只被一次添加到微任务中
+// let pending = false // 是否已将任务队列添加到微任务中
+// let callbacks = [] // 任务队列
+// function nextTick(cb) { // 添加任务队列
+// 	callbacks.push(cb)
+// 	if (!pending) {
+// 		pending = true
+// 		p.then(run)
+// 	}
+// }
+// function run() { // 执行微任务队列
+// 	pending = false
+// 	let copys = callbacks.slice()
+// 	copys.forEach(cb => {
+// 		cb()
+// 	})
+// 	callbacks.length = 0
+// }
+// let p = Promise.resolve()
+// // 测试：
+// nextTick(() => console.log(11))
+// nextTick(() => console.log(22))
+// // 11 22 11 22
+// setTimeout(() => {
+// 	nextTick(() => console.log(33)) //
+// 	nextTick(() => console.log(44)) //
+// 	// 11 22 33 44 11 22 33 44
+// }, 3000)
+
+// // 4.扩展版：当cb为空时，返回一个微任务
+// let pending = false // 是否已将任务队列添加到微任务中
+// let callbacks = [] // 任务队列
+// function nextTick(cb, ctx) { // 添加任务队列
+// 	let _resolve
+// 	if (cb) {
+// 		callbacks.push(() => {
+// 			cb.apply(ctx)
+// 		})
+// 	} else {
+// 		callbacks.push(() => {
+// 			_resolve(ctx)
+// 		})
+// 	}
+// 	if (!pending) {
+// 		pending = true
+// 		p.then(run)
+// 	}
+
+// 	if (!cb) {
+// 		return new Promise(resolve => {
+// 			_resolve = resolve
+// 		})
+// 	}
+// }
+// function run() { // 执行微任务队列
+// 	pending = false
+// 	let copys = callbacks.slice()
+// 	copys.forEach(cb => {
+// 		cb()
+// 	})
+// 	callbacks.length = 0
+// }
+// let p = Promise.resolve()
+// // 测试：
+// let p1 = nextTick(() => console.log(11))
+// let p2 = nextTick(() => console.log(22))
+// let p3 = nextTick(null, { foo: 42 })
+// p3.then(res => console.error(res))
+// let p4 = nextTick(() => console.log(44))
+// let p5 = nextTick(() => console.log(55))
+// console.error(p1, p2, p3, p4, p5) // undefined undefined Promise {<pending>} undefined undefined
+// // 11 22 44 55 { foo: 42 }

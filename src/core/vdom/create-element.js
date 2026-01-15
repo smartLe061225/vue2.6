@@ -33,6 +33,8 @@ export function createElement (
   normalizationType: any,
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
+  // h('div', 'hello world'),
+  // h('div', [h('span', 'hello'), h('span', 'Vue')])
   if (Array.isArray(data) || isPrimitive(data)) {
     normalizationType = children
     children = data
@@ -63,7 +65,7 @@ export function _createElement (
   if (isDef(data) && isDef(data.is)) {
     tag = data.is
   }
-  if (!tag) {
+  if (!tag) { // 动态组件<component :is="">
     // in case of component :is set to falsy value
     return createEmptyVNode()
   }
@@ -134,7 +136,6 @@ export function _createElement (
     return createEmptyVNode()
   }
 }
-
 function applyNS (vnode, ns, force) {
   vnode.ns = ns
   if (vnode.tag === 'foreignObject') {
@@ -152,7 +153,6 @@ function applyNS (vnode, ns, force) {
     }
   }
 }
-
 // ref #5318
 // necessary to ensure parent re-render when deep bindings like :style and
 // :class are used on slot nodes

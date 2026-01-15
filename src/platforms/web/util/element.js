@@ -73,5 +73,23 @@ export function isUnknownElement (tag: string): boolean {
     return (unknownElementCache[tag] = /HTMLUnknownElement/.test(el.toString()))
   }
 }
+// HTMLDivElement HTMLElement Element Node EventTarget
+// let div = document.createElement('div')
+// div.toString() // '[object HTMLDivElement]'
+// div.constructor === HTMLDivElement // true
+// div instanceof HTMLDivElement // true
+// div.__proto__ === HTMLDivElement.prototype // true
+// HTMLDivElement.prototype.__proto__ === HTMLElement.prototype // true
+// HTMLElement.prototype.__proto__ ===  Element.prototype // true
+// Element.prototype.__proto__ ===  Node.prototype // true
+// Node.prototype.__proto__ ===  EventTarget.prototype // true
+
+// HTMLUnknownElement HTMLElement Element Node EventTarget
+// let none = document.createElement('none')
+// none.toString() // '[object HTMLUnknownElement]'
+// none.constructor === HTMLUnknownElement // true
+// none instanceof HTMLUnknownElement // true
+// none.__proto__ === HTMLUnknownElement.prototype // true
+// HTMLUnknownElement.prototype.__proto__ === HTMLElement.prototype // true
 
 export const isTextInputType = makeMap('text,number,password,search,email,tel,url')

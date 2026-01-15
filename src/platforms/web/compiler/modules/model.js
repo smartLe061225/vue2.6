@@ -84,11 +84,11 @@ function preTransformNode (el: ASTElement, options: CompilerOptions) {
     }
   }
 }
-
 function cloneASTElement (el) {
   return createASTElement(el.tag, el.attrsList.slice(), el.parent)
 }
 
+// 仅引用被文件：./index.js
 export default {
   preTransformNode
 }

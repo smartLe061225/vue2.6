@@ -45,8 +45,9 @@ function genData (el: ASTElement): string {
   return data
 }
 
+// 仅引用被文件：./index.js
 export default {
   staticKeys: ['staticStyle'],
   transformNode,
-  genData
+  // genData // no use
 }

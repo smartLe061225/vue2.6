@@ -58,7 +58,6 @@ function updateAttrs (oldVnode: VNodeWithData, vnode: VNodeWithData) {
     }
   }
 }
-
 function setAttr (el: Element, key: string, value: any, isInPre: any) {
   if (isInPre || el.tagName.indexOf('-') > -1) {
     baseSetAttr(el, key, value)
@@ -87,7 +86,6 @@ function setAttr (el: Element, key: string, value: any, isInPre: any) {
     baseSetAttr(el, key, value)
   }
 }
-
 function baseSetAttr (el, key, value) {
   if (isFalsyAttrValue(value)) {
     el.removeAttribute(key)
@@ -113,6 +111,7 @@ function baseSetAttr (el, key, value) {
   }
 }
 
+// 仅引用被文件：./index.js
 export default {
   create: updateAttrs,
   update: updateAttrs

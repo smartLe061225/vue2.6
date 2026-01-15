@@ -2,6 +2,23 @@
 
 import { isDef, isObject } from 'shared/util'
 
+// const childVnode = {
+//   data: {
+//     staticClass: 'child-static',
+//     class: 'child-dynamic'
+//   },
+//   componentInstance: {
+//     _vnode: {
+//       data: {
+//         staticClass: 'parent-static',
+//         class: null
+//       }
+//     }
+//   }
+// }
+// genClassForVnode(childVnode) // 'child-static parent-static child-dynamic'
+
+// 生成 vnode 的 class 字符串
 export function genClassForVnode (vnode: VNodeWithData): string {
   let data = vnode.data
   let parentNode = vnode
@@ -19,7 +36,6 @@ export function genClassForVnode (vnode: VNodeWithData): string {
   }
   return renderClass(data.staticClass, data.class)
 }
-
 function mergeClassData (child: VNodeData, parent: VNodeData): {
   staticClass: string,
   class: any
@@ -31,7 +47,6 @@ function mergeClassData (child: VNodeData, parent: VNodeData): {
       : parent.class
   }
 }
-
 export function renderClass (
   staticClass: ?string,
   dynamicClass: any
@@ -42,11 +57,15 @@ export function renderClass (
   /* istanbul ignore next */
   return ''
 }
-
+// 以空格连接两个字符串
 export function concat (a: ?string, b: ?string): string {
-  return a ? b ? (a + ' ' + b) : a : (b || '')
+  return a
+    ? b
+      ? (a + ' ' + b)
+      : a
+    : (b || '')
 }
-
+// 将动态class进行字符串化
 export function stringifyClass (value: any): string {
   if (Array.isArray(value)) {
     return stringifyArray(value)
@@ -60,7 +79,15 @@ export function stringifyClass (value: any): string {
   /* istanbul ignore next */
   return ''
 }
-
+// let cl1= 'foo bar'
+// let cl2 = ['foo', 'bar']
+// let cl3 = { foo: true, bar: true }
+// let cl4 = ['foo', 'bar', ['baz', 'qux'], { quux: true, corge: true }]
+// stringifyClass(cl1) // 'foo bar'
+// stringifyClass(cl2) // 'foo bar'
+// stringifyClass(cl3) // 'foo bar'
+// stringifyClass(cl4) // 'foo bar baz qux quux corge'
+// 将数组中的每一项转换成字符串并以空格连接
 function stringifyArray (value: Array<any>): string {
   let res = ''
   let stringified
@@ -72,7 +99,7 @@ function stringifyArray (value: Array<any>): string {
   }
   return res
 }
-
+// 将对象的key以空格连接成字符串，value为真的key才会被连接
 function stringifyObject (value: Object): string {
   let res = ''
   for (const key in value) {
@@ -83,3 +110,20 @@ function stringifyObject (value: Object): string {
   }
   return res
 }
+// let obj = {
+// 	a: undefined,
+// 	b: null,
+// 	c: 0,
+// 	d: NaN,
+// 	e: Infinity,
+// 	f: false,
+// 	g: '',
+// 	foo: 'hello',
+// 	bar: [1, 3, 5],
+// 	baz: function(a, b) {
+// 		return a + b
+// 	},
+// 	qux: { x: 11 }
+
+// }
+// stringifyObject(obj) // 'e foo bar baz qux'

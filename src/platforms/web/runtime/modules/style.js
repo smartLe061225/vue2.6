@@ -3,6 +3,23 @@
 import { getStyle, normalizeStyleBinding } from 'web/util/style'
 import { cached, camelize, extend, isDef, isUndef, hyphenate } from 'shared/util'
 
+let emptyStyle
+const vendorNames = ['Webkit', 'Moz', 'ms']
+const normalize = cached(function (prop) {
+  emptyStyle = emptyStyle || document.createElement('div').style
+  prop = camelize(prop)
+  if (prop !== 'filter' && (prop in emptyStyle)) {
+    return prop
+  }
+  const capName = prop.charAt(0).toUpperCase() + prop.slice(1)
+  for (let i = 0; i < vendorNames.length; i++) {
+    const name = vendorNames[i] + capName
+    if (name in emptyStyle) {
+      return name
+    }
+  }
+})
+
 const cssVarRE = /^--/
 const importantRE = /\s*!important$/
 const setProp = (el, name, val) => {
@@ -25,24 +42,6 @@ const setProp = (el, name, val) => {
     }
   }
 }
-
-const vendorNames = ['Webkit', 'Moz', 'ms']
-
-let emptyStyle
-const normalize = cached(function (prop) {
-  emptyStyle = emptyStyle || document.createElement('div').style
-  prop = camelize(prop)
-  if (prop !== 'filter' && (prop in emptyStyle)) {
-    return prop
-  }
-  const capName = prop.charAt(0).toUpperCase() + prop.slice(1)
-  for (let i = 0; i < vendorNames.length; i++) {
-    const name = vendorNames[i] + capName
-    if (name in emptyStyle) {
-      return name
-    }
-  }
-})
 
 function updateStyle (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   const data = vnode.data
@@ -87,6 +86,7 @@ function updateStyle (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   }
 }
 
+// 仅引用被文件：./index.js
 export default {
   create: updateStyle,
   update: updateStyle

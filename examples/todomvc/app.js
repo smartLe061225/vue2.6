@@ -65,7 +65,7 @@ var app = new Vue({
     },
     allDone: {
       get: function () {
-        return this.remaining === 0
+        return this.remaining === 0 // 当无未完成项时，复选框高亮
       },
       set: function (value) {
         this.todos.forEach(function (todo) {
@@ -106,7 +106,11 @@ var app = new Vue({
       this.editedTodo = todo
     },
 
-    doneEdit: function (todo) {
+    doneEdit: function (todo, type) {
+      console.log('doneEdit:', this.editedTodo, type)
+       // 按回车时，会先触发enter事件：{__ob__: we} 'enter'
+       // 再触发blur事件：null 'blur'
+       // 由于触发enter事件的回调函数中已将editedTodo置为空，编辑的input元素display设置为了none，故而
       if (!this.editedTodo) {
         return
       }
@@ -140,8 +144,11 @@ var app = new Vue({
 })
 
 // handle routing
-function onHashChange () {
-  var visibility = window.location.hash.replace(/#\/?/, '')
+function onHashChange (type) {
+  // 'ab#cd#/ef#//gh'.replace(/#\/?/, '=') // 'ab=cd#/ef#//gh'
+  // 'ab#cd#/ef#//gh'.replace(/#\/?/g, '=') // 'ab=cd=ef=/gh'
+  console.error('current hash is:', window.location.hash, type)
+  var visibility = window.location.hash.replace(/#\/?/, '') // '#/all' -> 'all'
   if (filters[visibility]) {
     app.visibility = visibility
   } else {
@@ -149,9 +156,8 @@ function onHashChange () {
     app.visibility = 'all'
   }
 }
-
-window.addEventListener('hashchange', onHashChange)
-onHashChange()
+window.addEventListener('hashchange', () => onHashChange('listener')) // 监听浏览器hash值变化，事件回调函数默认第一个参数为事件本身
+onHashChange('init')
 
 // mount
 app.$mount('.todoapp')

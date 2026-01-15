@@ -42,6 +42,7 @@ function updateClass (oldVnode: any, vnode: any) {
   }
 }
 
+// 仅引用被文件：./index.js
 export default {
   create: updateClass,
   update: updateClass

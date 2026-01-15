@@ -20,6 +20,8 @@ import {
   removeTransitionClass
 } from '../transition-util'
 
+// 仅调用被本文件的_enter方法
+// 仅调用被bind钩子 & update钩子：src/platforms/web/runtime/directives/show.js
 export function enter (vnode: VNodeWithData, toggleDisplay: ?() => void) {
   const el: any = vnode.elm
 
@@ -173,6 +175,8 @@ export function enter (vnode: VNodeWithData, toggleDisplay: ?() => void) {
   }
 }
 
+// 仅调用被本文件的remove方法
+// 仅调用被update钩子：src/platforms/web/runtime/directives/show.js
 export function leave (vnode: VNodeWithData, rm: Function) {
   const el: any = vnode.elm
 
@@ -328,7 +332,7 @@ function _enter (_: any, vnode: VNodeWithData) {
     enter(vnode)
   }
 }
-
+// 仅引用被文件：./index.js
 export default inBrowser ? {
   create: _enter,
   activate: _enter,

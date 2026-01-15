@@ -1,10 +1,10 @@
 /* @flow */
 
-import { escape, isSSRUnsafeAttr } from 'web/server/util'
 import { isObject, extend } from 'shared/util'
+import { escape, isSSRUnsafeAttr } from 'web/server/util'
 import { renderAttr } from 'web/server/modules/attrs'
-import { renderClass } from 'web/util/class'
 import { genStyle } from 'web/server/modules/style'
+import { renderClass } from 'web/util/class'
 import { normalizeStyleBinding } from 'web/util/style'
 
 import {

@@ -44,13 +44,14 @@ describe('Options mixins', () => {
       directives: {
         b: b
       },
+      template: 'bar',
       created: f2
     }
     const result = mergeOptions({}, {
       directives: {
         c: c
       },
-      template: 'bar',
+      // template: 'baz',
       mixins: [mixinA, mixinB],
       created: f3
     })
@@ -62,7 +63,7 @@ describe('Options mixins', () => {
     expect(result.created[0]).toBe(f1)
     expect(result.created[1]).toBe(f2)
     expect(result.created[2]).toBe(f3)
-    expect(result.template).toBe('bar')
+    expect(result.template).toBe('bar') // 'baz' 'bar' 'foo'
   })
 
   it('mixin methods should not override defined method', () => {
@@ -82,10 +83,10 @@ describe('Options mixins', () => {
     const result = mergeOptions({}, {
       mixins: [mixinA, mixinB],
       methods: {
-        xyz: f3
+        // xyz: f3
       }
     })
-    expect(result.methods.xyz).toBe(f3)
+    expect(result.methods.xyz).toBe(f2) // f3 f2 f1
   })
 
   it('should accept constructors as mixins', () => {

@@ -22,17 +22,7 @@ let waiting = false
 let flushing = false
 let index = 0
 
-/**
- * Reset the scheduler's state.
- */
-function resetSchedulerState () {
-  index = queue.length = activatedChildren.length = 0
-  has = {}
-  if (process.env.NODE_ENV !== 'production') {
-    circular = {}
-  }
-  waiting = flushing = false
-}
+
 
 // Async edge case #6566 requires saving the timestamp when event listeners are
 // attached. However, calling performance.now() has a perf overhead especially
@@ -126,7 +116,24 @@ function flushSchedulerQueue () {
     devtools.emit('flush')
   }
 }
-
+/**
+ * Reset the scheduler's state.
+ */
+// 重置调度器的状态变量
+function resetSchedulerState () {
+  index = queue.length = activatedChildren.length = 0
+  has = {}
+  if (process.env.NODE_ENV !== 'production') {
+    circular = {}
+  }
+  waiting = flushing = false
+}
+function callActivatedHooks (queue) {
+  for (let i = 0; i < queue.length; i++) {
+    queue[i]._inactive = true
+    activateChildComponent(queue[i], true /* true */)
+  }
+}
 function callUpdatedHooks (queue) {
   let i = queue.length
   while (i--) {
@@ -142,6 +149,7 @@ function callUpdatedHooks (queue) {
  * Queue a kept-alive component that was activated during patch.
  * The queue will be processed after the entire tree has been patched.
  */
+// 仅被componentVNodeHooks中的insert钩子调用
 export function queueActivatedComponent (vm: Component) {
   // setting _inactive to false here so that a render function can
   // rely on checking whether it's in an inactive tree (e.g. router-view)
@@ -149,18 +157,12 @@ export function queueActivatedComponent (vm: Component) {
   activatedChildren.push(vm)
 }
 
-function callActivatedHooks (queue) {
-  for (let i = 0; i < queue.length; i++) {
-    queue[i]._inactive = true
-    activateChildComponent(queue[i], true /* true */)
-  }
-}
-
 /**
  * Push a watcher into the watcher queue.
  * Jobs with duplicate IDs will be skipped unless it's
  * pushed when the queue is being flushed.
  */
+// 仅被Watcher.prototype.update方法调用
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
   if (has[id] == null) {

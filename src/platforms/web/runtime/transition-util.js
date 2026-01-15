@@ -4,6 +4,8 @@ import { inBrowser, isIE9 } from 'core/util/index'
 import { addClass, removeClass } from './class-util'
 import { remove, extend, cached } from 'shared/util'
 
+// 仅调用被enter方法 & leave方法：src/platforms/web/runtime/modules/transition.js
+// 仅调用被enter方法 & leave方法：src/platforms/weex/runtime/modules/transition.js
 export function resolveTransition (def?: string | Object): ?Object {
   if (!def) {
     return
@@ -20,7 +22,6 @@ export function resolveTransition (def?: string | Object): ?Object {
     return autoCssTransition(def)
   }
 }
-
 const autoCssTransition: (name: string) => Object = cached(name => {
   return {
     enterClass: `${name}-enter`,
@@ -32,12 +33,15 @@ const autoCssTransition: (name: string) => Object = cached(name => {
   }
 })
 
+// 仅引用被本文件
+// 仅引用被hasMove方法：src/platforms/web/runtime/components/transition-group.js
 export const hasTransition = inBrowser && !isIE9
 const TRANSITION = 'transition'
 const ANIMATION = 'animation'
 
 // Transition property/event sniffing
 export let transitionProp = 'transition'
+// 还引用被updated钩子：src/platforms/web/runtime/components/transition-group.js
 export let transitionEndEvent = 'transitionend'
 export let animationProp = 'animation'
 export let animationEndEvent = 'animationend'
@@ -63,13 +67,15 @@ const raf = inBrowser
     ? window.requestAnimationFrame.bind(window)
     : setTimeout
   : /* istanbul ignore next */ fn => fn()
-
+// 仅调用被enter方法 & leave方法：src/platforms/web/runtime/modules/transition.js
 export function nextFrame (fn: Function) {
   raf(() => {
     raf(fn)
   })
 }
 
+// 仅调用被enter方法 & leave方法：src/platforms/web/runtime/modules/transition.js
+// 还引用被updated钩子：src/platforms/web/runtime/components/transition-group.js
 export function addTransitionClass (el: any, cls: string) {
   const transitionClasses = el._transitionClasses || (el._transitionClasses = [])
   if (transitionClasses.indexOf(cls) < 0) {
@@ -78,6 +84,8 @@ export function addTransitionClass (el: any, cls: string) {
   }
 }
 
+// 仅调用被enter方法 & leave方法：src/platforms/web/runtime/modules/transition.js
+// 还引用被updated钩子：src/platforms/web/runtime/components/transition-group.js
 export function removeTransitionClass (el: any, cls: string) {
   if (el._transitionClasses) {
     remove(el._transitionClasses, cls)
@@ -85,6 +93,7 @@ export function removeTransitionClass (el: any, cls: string) {
   removeClass(el, cls)
 }
 
+// 仅调用被enter方法 & leave方法：src/platforms/web/runtime/modules/transition.js
 export function whenTransitionEnds (
   el: Element,
   expectedType: ?string,
@@ -114,7 +123,8 @@ export function whenTransitionEnds (
 }
 
 const transformRE = /\b(transform|all)(,|$)/
-
+// 仅调用被本文件的whenTransitionEnds方法
+// 仅调用被hasMove方法：src/platforms/web/runtime/components/transition-group.js
 export function getTransitionInfo (el: Element, expectedType?: ?string): {
   type: ?string;
   propCount: number;
@@ -169,7 +179,6 @@ export function getTransitionInfo (el: Element, expectedType?: ?string): {
     hasTransform
   }
 }
-
 function getTimeout (delays: Array<string>, durations: Array<string>): number {
   /* istanbul ignore next */
   while (delays.length < durations.length) {
@@ -180,7 +189,6 @@ function getTimeout (delays: Array<string>, durations: Array<string>): number {
     return toMs(d) + toMs(delays[i])
   }))
 }
-
 // Old versions of Chromium (below 61.0.3163.100) formats floating pointer numbers
 // in a locale-dependent way, using a comma instead of a dot.
 // If comma is not replaced with a dot, the input will be rounded down (i.e. acting

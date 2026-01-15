@@ -8,5 +8,5 @@ import platformModules from 'web/runtime/modules/index'
 // the directive module should be applied last, after all
 // built-in modules have been applied.
 const modules = platformModules.concat(baseModules)
-
+// 仅调用被Vue.prototype.__patch__方法：src/platforms/web/runtime/index.js
 export const patch: Function = createPatchFunction({ nodeOps, modules })

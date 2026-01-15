@@ -7,6 +7,7 @@ export function parseFilters (exp: string): string {
   let inDouble = false
   let inTemplateString = false
   let inRegex = false
+
   let curly = 0
   let square = 0
   let paren = 0
@@ -16,14 +17,20 @@ export function parseFilters (exp: string): string {
   for (i = 0; i < exp.length; i++) {
     prev = c
     c = exp.charCodeAt(i)
+    // `\\`.charCodeAt(0) === 0x5C // true
+    // `'`.charCodeAt(0) === 0x27 // true
+    // `"`.charCodeAt(0) === 0x22 // true
+    // '`'.charCodeAt(0) === 0x60 // true
+    // `/`.charCodeAt(0) === 0x2f // true
+    // `|`.charCodeAt(0) === 0x7C // true
     if (inSingle) {
-      if (c === 0x27 && prev !== 0x5C) inSingle = false
+      if (c === 0x27 && prev !== 0x5C) inSingle = false // ' \
     } else if (inDouble) {
-      if (c === 0x22 && prev !== 0x5C) inDouble = false
+      if (c === 0x22 && prev !== 0x5C) inDouble = false // " \
     } else if (inTemplateString) {
-      if (c === 0x60 && prev !== 0x5C) inTemplateString = false
+      if (c === 0x60 && prev !== 0x5C) inTemplateString = false // ` \
     } else if (inRegex) {
-      if (c === 0x2f && prev !== 0x5C) inRegex = false
+      if (c === 0x2f && prev !== 0x5C) inRegex = false // ' \
     } else if (
       c === 0x7C && // pipe
       exp.charCodeAt(i + 1) !== 0x7C &&
@@ -39,6 +46,15 @@ export function parseFilters (exp: string): string {
       }
     } else {
       switch (c) {
+        // `"`.charCodeAt(0) === 0x22 // true
+        // `'`.charCodeAt(0) === 0x27 // true
+        // '`'.charCodeAt(0) === 0x60 // true
+        // `(`.charCodeAt(0) === 0x28 // true
+        // `)`.charCodeAt(0) === 0x29 // true
+        // `[`.charCodeAt(0) === 0x5B // true
+        // `]`.charCodeAt(0) === 0x5D // true
+        // `{`.charCodeAt(0) === 0x7B // true
+        // `}`.charCodeAt(0) === 0x7D // true
         case 0x22: inDouble = true; break         // "
         case 0x27: inSingle = true; break         // '
         case 0x60: inTemplateString = true; break // `
@@ -49,6 +65,7 @@ export function parseFilters (exp: string): string {
         case 0x7B: curly++; break                 // {
         case 0x7D: curly--; break                 // }
       }
+      // `/`.charCodeAt(0) === 0x2f // true
       if (c === 0x2f) { // /
         let j = i - 1
         let p
@@ -83,7 +100,6 @@ export function parseFilters (exp: string): string {
 
   return expression
 }
-
 function wrapFilter (exp: string, filter: string): string {
   const i = filter.indexOf('(')
   if (i < 0) {
@@ -95,3 +111,6 @@ function wrapFilter (exp: string, filter: string): string {
     return `_f("${name}")(${exp}${args !== ')' ? ',' + args : args}`
   }
 }
+// wrapFilter('ab-cd-ef', 'camelize') // '_f("camelize")(ab-cd-ef)'
+// wrapFilter('ab-cd-ef', 'camelize(num)') // '_f("camelize")(ab-cd-ef,num)'
+global.wrapFilter = wrapFilter

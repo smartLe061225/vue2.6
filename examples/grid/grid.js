@@ -14,14 +14,15 @@ Vue.component('demo-grid', {
     })
     return {
       sortKey: '',
-      sortOrders: sortOrders
+      sortOrders: sortOrders // { name: 1, power: 1 } 其中1表示正序，-1表示逆序
     }
   },
   computed: {
     filteredData: function () {
       var sortKey = this.sortKey
-      var filterKey = this.filterKey && this.filterKey.toLowerCase()
       var order = this.sortOrders[sortKey] || 1
+
+      var filterKey = this.filterKey && this.filterKey.toLowerCase()
       var data = this.data
       if (filterKey) {
         data = data.filter(function (row) {

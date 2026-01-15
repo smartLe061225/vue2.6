@@ -112,6 +112,7 @@ describe('Instance methods lifecycle', () => {
 
     it('remove self from data observer', () => {
       const vm = new Vue({ data: { a: 1 }})
+      expect(vm.$data.__ob__.vmCount).toBe(1)
       vm.$destroy()
       expect(vm.$data.__ob__.vmCount).toBe(0)
     })

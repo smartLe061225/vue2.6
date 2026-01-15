@@ -32,6 +32,7 @@ const strats = config.optionMergeStrategies
  * Options with restrictions
  */
 if (process.env.NODE_ENV !== 'production') {
+  // 非生产环境下， 修改选项el和选项propsData的合并策略会静默失败
   strats.el = strats.propsData = function (parent, child, vm, key) {
     if (!vm) {
       warn(
@@ -46,6 +47,7 @@ if (process.env.NODE_ENV !== 'production') {
 /**
  * Helper that recursively merges two data objects together.
  */
+// 仅被本文件中的mergeDataOrFn函数调用
 function mergeData (to: Object, from: ?Object): Object {
   if (!from) return to
   let key, toVal, fromVal
@@ -61,21 +63,34 @@ function mergeData (to: Object, from: ?Object): Object {
     toVal = to[key]
     fromVal = from[key]
     if (!hasOwn(to, key)) {
+      // 若目标对象to没有该属性，则直接赋值到目标对象to上
       set(to, key, fromVal)
     } else if (
       toVal !== fromVal &&
       isPlainObject(toVal) &&
       isPlainObject(fromVal)
     ) {
+      // 若目标对象to和源对象from的该属性值均为纯对象，则递归合并该属性值对象
+      // { foo: { bar: 24 } } vs { foo: { bar: 24, baz: 36 } }
       mergeData(toVal, fromVal)
+    } else {
+      // 若目标对象to和源对象from的该属性值相等
+      // 若目标对象to和源对象from的该属性值不相等，且该属性值均非纯对象
+      // 若目标对象to和源对象from的该属性值不相等，且该属性值中有一个非纯对象
+      // 则直接使用目标对象to上的该属性值
+      // { foo: 42 } vs { foo: 42 }
+      // { foo: { bar: 24 } } vs { foo: { bar: 24 } }
+      // { foo: 42 } vs { foo: 24 }
+      // { foo: 42 } vs { foo: { bar: 24 } }
     }
   }
   return to
 }
-
 /**
  * Data
  */
+// 选项data和选项provide的合并策略
+// 原则：将目标对象中属性值合并到源对象中，若属性值均为纯对象则递归合并该属性值对象
 export function mergeDataOrFn (
   parentVal: any,
   childVal: any,
@@ -117,7 +132,6 @@ export function mergeDataOrFn (
     }
   }
 }
-
 strats.data = function (
   parentVal: any,
   childVal: any,
@@ -139,10 +153,24 @@ strats.data = function (
 
   return mergeDataOrFn(parentVal, childVal, vm)
 }
+strats.provide = mergeDataOrFn
 
+// 仅调用被本文件中的mergeHook函数
+// 去重目标对象生命周期钩子函数数组中的重复函数 & 去重源对象生命周期钩子函数数组中的重复函数
+function dedupeHooks (hooks) {
+  const res = []
+  for (let i = 0; i < hooks.length; i++) {
+    if (res.indexOf(hooks[i]) === -1) {
+      res.push(hooks[i])
+    }
+  }
+  return res
+}
 /**
  * Hooks and props are merged as arrays.
  */
+// 生命周期钩子函数的合并策略
+// 原则：将目标对象和源对象对应的生命周期钩子函数合并为一个数组
 function mergeHook (
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
@@ -158,17 +186,6 @@ function mergeHook (
     ? dedupeHooks(res)
     : res
 }
-
-function dedupeHooks (hooks) {
-  const res = []
-  for (let i = 0; i < hooks.length; i++) {
-    if (res.indexOf(hooks[i]) === -1) {
-      res.push(hooks[i])
-    }
-  }
-  return res
-}
-
 LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook
 })
@@ -180,6 +197,8 @@ LIFECYCLE_HOOKS.forEach(hook => {
  * a three-way merge between constructor options, instance
  * options and parent options.
  */
+// 资源选项(components/directives/filters)的合并策略
+// 原则：只获取子选项中的资源选项
 function mergeAssets (
   parentVal: ?Object,
   childVal: ?Object,
@@ -194,7 +213,6 @@ function mergeAssets (
     return res
   }
 }
-
 ASSET_TYPES.forEach(function (type) {
   strats[type + 's'] = mergeAssets
 })
@@ -205,6 +223,8 @@ ASSET_TYPES.forEach(function (type) {
  * Watchers hashes should not overwrite one
  * another, so we merge them as arrays.
  */
+// 监听器的合并策略
+// 原则：将目标对象和源对象对应的监听器合并为一个数组
 strats.watch = function (
   parentVal: ?Object,
   childVal: ?Object,
@@ -256,13 +276,22 @@ strats.computed = function (
   if (childVal) extend(ret, childVal)
   return ret
 }
-strats.provide = mergeDataOrFn
+
+function assertObjectType (name: string, value: any, vm: ?Component) {
+  if (!isPlainObject(value)) {
+    warn(
+      `Invalid value for option "${name}": expected an Object, ` +
+      `but got ${toRawType(value)}.`,
+      vm
+    )
+  }
+}
 
 /**
  * Default strategy.
  */
 const defaultStrat = function (parentVal: any, childVal: any): any {
-  return childVal === undefined
+  return childVal === undefined // 若有子选项则使用父选项，否则使用子选项
     ? parentVal
     : childVal
 }
@@ -275,8 +304,8 @@ function checkComponents (options: Object) {
     validateComponentName(key)
   }
 }
-
 export function validateComponentName (name: string) {
+  // 'a-.12_abAB.34aA_-'.replace(new RegExp(`^[a-zA-Z][\\-\\.0-9_a-zA-Z]*$`, 'g'), '=') // '='
   if (!new RegExp(`^[a-zA-Z][\\-\\.0-9_${unicodeRegExp.source}]*$`).test(name)) {
     warn(
       'Invalid component name: "' + name + '". Component names ' +
@@ -290,7 +319,6 @@ export function validateComponentName (name: string) {
     )
   }
 }
-
 /**
  * Ensure all props option syntax are normalized into the
  * Object-based format.
@@ -328,7 +356,26 @@ function normalizeProps (options: Object, vm: ?Component) {
   }
   options.props = res
 }
-
+// // 简单语法
+// Vue.component('props-demo-simple', {
+//   props: ['size', 'myMessage']
+// })
+// // 对象语法，提供验证
+// Vue.component('props-demo-advanced', {
+//   props: {
+//     // 检测类型
+//     height: Number,
+//     // 检测类型 + 其他验证
+//     age: {
+//       type: Number,
+//       default: 0,
+//       required: true,
+//       validator: function (value) {
+//         return value >= 0
+//       }
+//     }
+//   }
+// })
 /**
  * Normalize all injections into Object-based format
  */
@@ -355,7 +402,103 @@ function normalizeInject (options: Object, vm: ?Component) {
     )
   }
 }
-
+// 示例1：
+// let s1 = Symbol('11')
+// let s2 = Symbol('22')
+// let s3 = Symbol('33')
+// var obj = {
+//   s1: 1,
+//   s2,
+//   s3: s3,
+//   s4: s3,
+//   [s1]: 2,
+//   [s2]: s2,
+//   s5: [s3]
+// }
+// {
+// 	s1: 1,
+// 	s2: Symbol(22),
+// 	s3: Symbol(33),
+// 	s4: Symbol(33),
+// 	s5: [Symbol(33)],
+// 	Symbol(11): 2,
+// 	Symbol(22): Symbol(22),
+// }
+// console.log(obj.s1, obj.s2, obj.s3, obj.s4, obj[s1], obj[s2]) // 1 Symbol(22) Symbol(33) Symbol(33) 2 Symbol(22)
+// 总结：s = Symbol()作为一个类似字符串的常量，当作为属性名时采用[s]，作为属性值时采用s
+// 示例2：
+// const s1 = Symbol()
+// const s2 = Symbol()
+// const s3 = Symbol()
+// const s4 = Symbol()
+// function render(h) {
+//   return h('ul', [
+//     h('li', this.foo),
+//     h('li', this.bar),
+//     h('li', this.baz),
+//     h('li', this.s1),
+//     h('li', this.s2),
+//     h('li', this.s3),
+//     h('li', this.s4),
+//   ])
+// }
+// const Child1 = {
+//   inject: { foo: 'foo', bar: 'bar', baz: 'bar', s1, s2: s2, s4: s3},
+//   render,
+// }
+// const Child2 = {
+//   inject: {
+//     foo: { from: 'foo' },
+//     bar: { from: 'bar' },
+//     baz: { from: 'bar' },
+//     s1: { from: s1 },
+//     s2: { from: s2 },
+//     s4: { from: s3 },
+//   },
+//   render,
+// }
+// const Child3 = {
+//   inject: {
+//     foo: { default: 'foo' },
+//     bar: { default: 'bar' },
+//     baz: { default: 'bar' },
+//     s1: { default: s1 },
+//     s2: { default: s2 },
+//     s4: { default: s3 },
+//   },
+//   render,
+// }
+// const Child4 = {
+//   // inject: ['foo', 'bar', 'baz', s1, s2, s3, s4],
+//   inject: ['foo', 'bar', 'baz', s1, s2, s3],
+//   render,
+// }
+// export default {
+//   components: {
+//     HelloWorld,
+//     Child1,
+//     Child2,
+//     Child3,
+//     Child4,
+//   },
+//   render(h) {
+//     return h('div', { style: { display: 'flex' } }, [
+//       h(Child1),
+//       h(Child2),
+//       h(Child3),
+//       h(Child4),
+//     ])
+//   },
+//   provide() {
+//     return {
+//       foo: 42,
+//       bar: 24,
+//       [s1]: '11',
+//       [s2]: '22',
+//       [s3]: '33',
+//     }
+//   }
+// }
 /**
  * Normalize raw function directives into object format.
  */
@@ -370,17 +513,6 @@ function normalizeDirectives (options: Object) {
     }
   }
 }
-
-function assertObjectType (name: string, value: any, vm: ?Component) {
-  if (!isPlainObject(value)) {
-    warn(
-      `Invalid value for option "${name}": expected an Object, ` +
-      `but got ${toRawType(value)}.`,
-      vm
-    )
-  }
-}
-
 /**
  * Merge two option objects into a new one.
  * Core utility used in both instantiation and inheritance.

@@ -19,6 +19,7 @@ if (isIE9) {
   })
 }
 
+// 仅引用被文件：./index.js
 const directive = {
   inserted (el, binding, vnode, oldVnode) {
     if (vnode.tag === 'select') {
@@ -81,7 +82,6 @@ function setSelected (el, binding, vm) {
     }, 0)
   }
 }
-
 function actuallySetSelected (el, binding, vm) {
   const value = binding.value
   const isMultiple = el.multiple

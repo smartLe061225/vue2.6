@@ -10,10 +10,10 @@ export let formatComponentName = (noop: any)
 
 if (process.env.NODE_ENV !== 'production') {
   const hasConsole = typeof console !== 'undefined'
-  const classifyRE = /(?:^|[-_])(\w)/g
+  const classifyRE = /(?:^|[-_])(\w)/g // 'ab -cd -ef_gh-_ij_-kl'.replace(/(?:^|[-_])(\w)/g, '=') // '=b =d =f=h=ij_=l'
   const classify = str => str
     .replace(classifyRE, c => c.toUpperCase())
-    .replace(/[-_]/g, '')
+    .replace(/[-_]/g, '') // classify('ab -cd -ef_gh-_ij_-kl') // 'Ab Cd EfGhijKl'
 
   warn = (msg, vm) => {
     const trace = vm ? generateComponentTrace(vm) : ''
@@ -64,7 +64,6 @@ if (process.env.NODE_ENV !== 'production') {
     }
     return res
   }
-
   generateComponentTrace = vm => {
     if (vm._isVue && vm.$parent) {
       const tree = []

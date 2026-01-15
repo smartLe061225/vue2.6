@@ -32,7 +32,8 @@ export function def (obj: Object, key: string, val: any, enumerable?: boolean) {
  */
 const bailRE = new RegExp(`[^${unicodeRegExp.source}.$_\\d]`)
 export function parsePath (path: string): any {
-  if (bailRE.test(path)) {
+  // 'aB.+$+_2 3'.replace(/[^a-zA-Z.$_\d]/g, '=') // 'aB.=$=_2=3'
+  if (bailRE.test(path)) { // 当含有非法字符时
     return
   }
   const segments = path.split('.')

@@ -24,11 +24,9 @@ let target: any
 function add (event, fn) {
   target.$on(event, fn)
 }
-
 function remove (event, fn) {
   target.$off(event, fn)
 }
-
 function createOnceHandler (event, fn) {
   const _target = target
   return function onceHandler () {
@@ -38,7 +36,6 @@ function createOnceHandler (event, fn) {
     }
   }
 }
-
 export function updateComponentListeners (
   vm: Component,
   listeners: Object,
@@ -67,6 +64,41 @@ export function eventsMixin (Vue: Class<Component>) {
     }
     return vm
   }
+  // created() {
+  //   console.log('options:created')
+  //   this.$on('mounted', function() {
+  //     console.log('$on:mounted')
+  //   })
+  //   this.$on('hook:mounted', function() {
+  //   	console.log('$on:hook:mounted')
+  //   })
+  // },
+  // mounted() {
+  //   console.log('options:mounted')
+  //   setTimeout(() => {
+  //     console.log('----------')
+  //     this.$emit('created')
+  //   }, 3000)
+  //   setTimeout(() => {
+  //     console.log('----------')
+  //     this.$emit('hook:created')
+  //   }, 6000)
+  //   setTimeout(() => {
+  //     console.log('----------')
+  //     this.$emit('mounted') // $on:mounted
+  //   }, 9000)
+  //   setTimeout(() => {
+  //     console.log('----------')
+  //     this.$emit('hook:mounted') // $on:hook:mounted
+  //   }, 12000)
+  // }
+  // // options:created
+  // // ---$on:hook:  hook:mounted
+  // // ---callback:hook:  created
+  // // ---callback:hook:  beforeMount
+  // // options:mounted
+  // // ---callback:hook:  mounted
+  // // $on:hook:mounted
 
   Vue.prototype.$once = function (event: string, fn: Function): Component {
     const vm: Component = this

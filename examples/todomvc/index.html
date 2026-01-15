@@ -6,6 +6,49 @@
     <link rel="stylesheet" href="https://unpkg.com/todomvc-app-css@2.0.4/index.css">
     <script src="https://unpkg.com/director@1.2.8/build/director.js"></script>
     <style>[v-cloak] { display: none; }</style>
+    <style>
+      .todoapp {
+        font-weight: 400;
+      }
+      .todoapp h1 {
+        color: #40b782;
+      }
+      .header {
+        background: #4285F4;
+      }
+      .main {
+        background: #548AA3;
+      }
+      .toggle-all:before {
+        color: #4169e0;
+      }
+      .toggle-all:checked:before {
+        color: #fff;
+      }
+      .edit {
+        background: #609ea0;
+      }
+      .footer {
+        color:#ff0000;
+        background: #bfbfbf;
+      }
+      .filters li a.selected {
+        /* border-color: #35aa53; */
+        background: #fad5b9;
+      }
+      .clear-completed {
+        top: -3px;
+        padding: 2px 5px;
+        border: 1px solid #ffcc39;
+        border-radius: 5px;
+        background: #aaa;
+      }
+      .info {
+        font-size: 16px;
+        font-weight: 400;
+        color: #9e4cf5;
+      }
+    </style>
   </head>
   <body>
     <section class="todoapp">
@@ -26,14 +69,14 @@
             :class="{ completed: todo.completed, editing: todo == editedTodo }">
             <div class="view">
               <input class="toggle" type="checkbox" v-model="todo.completed">
-              <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
+              <label @dblclick="editTodo(todo)">{{ todo.id }}：{{ todo.title }}</label>
               <button class="destroy" @click="removeTodo(todo)"></button>
             </div>
             <input class="edit" type="text"
               v-model="todo.title"
               v-todo-focus="todo == editedTodo"
-              @blur="doneEdit(todo)"
-              @keyup.enter="doneEdit(todo)"
+              @blur="doneEdit(todo, 'blur')"
+              @keyup.enter="doneEdit(todo, 'enter')"
               @keyup.esc="cancelEdit(todo)">
           </li>
         </ul>

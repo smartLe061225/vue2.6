@@ -29,7 +29,6 @@ export function genComponentModel (
     callback: `function (${baseValueExpression}) {${assignment}}`
   }
 }
-
 /**
  * Cross-platform codegen helper for generating v-model value assignment code.
  */
@@ -59,14 +58,11 @@ export function genAssignmentCode (
  * - test.xxx.a["asa"][test1[key]]
  *
  */
-
 let len, str, chr, index, expressionPos, expressionEndPos
-
 type ModelParseResult = {
   exp: string,
   key: string | null
 }
-
 export function parseModel (val: string): ModelParseResult {
   // Fix https://github.com/vuejs/vue/pull/7730
   // allow v-model="obj.val " (trailing whitespace)
@@ -110,15 +106,21 @@ export function parseModel (val: string): ModelParseResult {
 function next (): number {
   return str.charCodeAt(++index)
 }
-
 function eof (): boolean {
   return index >= len
 }
-
 function isStringStart (chr: number): boolean {
   return chr === 0x22 || chr === 0x27
 }
-
+function parseString (chr: number): void {
+  const stringQuote = chr
+  while (!eof()) {
+    chr = next()
+    if (chr === stringQuote) {
+      break
+    }
+  }
+}
 function parseBracket (chr: number): void {
   let inBracket = 1
   expressionPos = index
@@ -132,16 +134,6 @@ function parseBracket (chr: number): void {
     if (chr === 0x5D) inBracket--
     if (inBracket === 0) {
       expressionEndPos = index
-      break
-    }
-  }
-}
-
-function parseString (chr: number): void {
-  const stringQuote = chr
-  while (!eof()) {
-    chr = next()
-    if (chr === stringQuote) {
       break
     }
   }

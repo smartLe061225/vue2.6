@@ -1,66 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Vue.js wrapper component example (jquery plugin: select2)</title>
-    <!-- Delete ".min" for console warnings in development -->
-    <script src="../../dist/vue.min.js"></script>
-    <script src="https://unpkg.com/jquery"></script>
-    <script src="https://unpkg.com/select2@4.0.3"></script>
-    <link href="https://unpkg.com/select2@4.0.3/dist/css/select2.min.css" rel="stylesheet">
-    <style>
+<head>
+  <meta charset="utf-8">
+  <title>Vue.js wrapper component example (jquery plugin: select2)</title>
+  <!-- Delete ".min" for console warnings in development -->
+  <script src="../../dist/vue.min.js"></script>
+  <script src="https://unpkg.com/jquery@2.1.0/dist/jquery.js"></script>
+  <script src="https://unpkg.com/select2@4.0.3"></script>
+  <link href="https://unpkg.com/select2@4.0.3/dist/css/select2.min.css" rel="stylesheet">
+  <style>
       html, body {
-        font: 13px/18px sans-serif;
-      }
-      select {
-        min-width: 300px;
-      }
-    </style>
-  </head>
-  <body>
+      font: 13px/18px sans-serif;
+    }
+    select {
+      min-width: 300px;
+    }
+  </style>
+</head>
+<body>
 
-    <div id="el">
-    </div>
+  <div id="el">
+  </div>
 
-    <!-- using string template here to work around HTML <option> placement restriction -->
-    <script type="text/x-template" id="demo-template">
+  <!-- using string template here to work around HTML <option> placement restriction -->
+  <script type="text/x-template" id="demo-template">
       <div>
+        <select class="select-box">
+          <option value="-1">Select nagetive</option>
+          <option value="">Select one</option>
+        </select>
         <p>Selected: {{ selected }}</p>
         <select2 :options="options" v-model="selected">
-          <option disabled value="0">Select one</option>
+          <option value="-1">Select nagative</option>
+          <option value="0">Select zero</option>
         </select2>
+        <button @click="changeSelected">选中下一项</button>
+        <button@ @click="addOption">新增选项</button>
+        <button@ @click="removeOption">移除选项</button>
       </div>
     </script>
 
-    <script type="text/x-template" id="select2-template">
-      <select>
+  <script type="text/x-template" id="select2-template">
+      <select class="select-box">
         <slot></slot>
       </select>
     </script>
 
-    <script>
+  <script>
     Vue.component('select2', {
       props: ['options', 'value'],
       template: '#select2-template',
       mounted: function () {
         var vm = this
+        console.error(this.$el, $(this.$el))
         $(this.$el)
-          .val(this.value)
+          .val(this.value) // $.val，选中指定选项
           // init select2
           .select2({ data: this.options })
-          // emit event on change.
-          .on('change', function () {
-            vm.$emit('input', this.value)
-          })
+        // .empty().select2({ data: this.options }) // 先清空原有下拉选项，再初始化Select2
+        // emit event on change.
+        .on('change', function (val) { // $.on
+          console.error('change callback', val)
+          // vm.$emit('input', this.value)
+        })
       },
       watch: {
         value: function (value) {
+          console.error('watch value', value)
           // update value
           $(this.$el).val(value).trigger('change')
         },
         options: function (options) {
+          console.error('watch options', options)
           // update options
-          $(this.$el).select2({ data: options })
+          // $(this.$el).select2({ data: options })
+          $(this.$el).empty().select2({ data: options }) // 先清空原有下拉选项，再初始化Select2
         }
       },
       destroyed: function () {
@@ -74,11 +88,25 @@
       data: {
         selected: 0,
         options: [
-          { id: 1, text: 'Hello' },
-          { id: 2, text: 'World' }
+          { id: 1, text: 'Select one' },
+          { id: 2, text: 'Select two' }
         ]
+      },
+      methods: {
+        changeSelected() {
+          let num = this.options.length + 2
+          let ids = this.selected + 1
+          this.selected = ids > (num - 2) ? -1 : ids
+        },
+        addOption() {
+          let num = this.options.length
+          this.options.push({ id: ++num, text: 'more' })
+        },
+        removeOption() {
+          this.options.pop()
+        }
       }
     })
-    </script>
-  </body>
+  </script>
+</body>
 </html>

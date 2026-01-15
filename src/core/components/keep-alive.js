@@ -9,8 +9,6 @@ type CacheEntry = {
   componentInstance: Component;
 };
 
-type CacheEntryMap = { [key: string]: ?CacheEntry };
-
 function getComponentName (opts: ?VNodeComponentOptions): ?string {
   return opts && (opts.Ctor.options.name || opts.tag)
 }
@@ -40,6 +38,7 @@ function pruneCache (keepAliveInstance: any, filter: Function) {
   }
 }
 
+type CacheEntryMap = { [key: string]: ?CacheEntry };
 function pruneCacheEntry (
   cache: CacheEntryMap,
   key: string,

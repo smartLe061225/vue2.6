@@ -41,6 +41,17 @@ Vue.prototype.$mount = function (
   el = el && inBrowser ? query(el) : undefined
   return mountComponent(this, el, hydrating)
 }
+// var MyComponent = Vue.extend({
+//   render(h) {
+//   	return h('div', 'Hello')
+//   }
+// })
+// // 创建并挂载到 #app (会替换 #app)
+// new MyComponent().$mount('#app')
+// new MyComponent({ el: '#app' }) // 同上
+// // 或者，在文档之外渲染并且随后挂载
+// var component = new MyComponent().$mount()
+// document.getElementById('app').appendChild(component.$el)
 
 // devtools global hook
 /* istanbul ignore next */

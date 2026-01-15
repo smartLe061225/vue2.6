@@ -4,6 +4,7 @@ import { looseEqual, looseIndexOf } from 'shared/util'
 
 // this is only applied for <select v-model> because it is the only edge case
 // that must be done at runtime instead of compile time.
+// 仅引用被文件：./index.js
 export default function model (node: VNodeWithData, dir: VNodeDirective) {
   if (!node.children) return
   const value = dir.value
@@ -27,7 +28,6 @@ export default function model (node: VNodeWithData, dir: VNodeDirective) {
     }
   }
 }
-
 function getValue (option) {
   const data = option.data || {}
   return (
@@ -36,7 +36,6 @@ function getValue (option) {
     (option.children && option.children[0] && option.children[0].text)
   )
 }
-
 function setSelected (option) {
   const data = option.data || (option.data = {})
   const attrs = data.attrs || (data.attrs = {})

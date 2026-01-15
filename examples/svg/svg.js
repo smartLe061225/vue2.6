@@ -5,7 +5,9 @@ var stats = [
   { label: 'C', value: 100 },
   { label: 'D', value: 100 },
   { label: 'E', value: 100 },
-  { label: 'F', value: 100 }
+  { label: 'F', value: 100 },
+  { label: 'G', value: 100 },
+  { label: 'H', value: 100 }
 ]
 
 // A reusable polygon graph component
@@ -51,8 +53,9 @@ function valueToPoint (value, index, total) {
   var angle = Math.PI * 2 / total * index
   var cos   = Math.cos(angle)
   var sin   = Math.sin(angle)
-  var tx    = x * cos - y * sin + 100
-  var ty    = x * sin + y * cos + 100
+  var tx    = x * cos - y * sin + 100 // - y * sin + 100，以左上顶点为原点，向右平移100(x轴箭头向右)
+  // sin(α - angle)，其中Math.tan(α) = x / y，且α为第一象限内角
+  var ty    = x * sin + y * cos + 100 // - y * cos + 100，，以左上顶点为原点，向下平移100(y轴箭头向下)
   return {
     x: tx,
     y: ty

@@ -34,10 +34,12 @@ describe('Dep', () => {
     let _target
 
     beforeAll(() => {
+      console.log('---beforeAll---', Dep.target)
       _target = Dep.target
     })
 
     afterAll(() => {
+      console.log('---afterAll---', Dep.target, _target)
       Dep.target = _target
     })
 

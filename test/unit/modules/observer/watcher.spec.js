@@ -23,6 +23,7 @@ describe('Watcher', () => {
     const watcher = new Watcher(vm, 'b.c', spy)
     expect(watcher.value).toBe(2)
     vm.b.c = 3
+    expect(watcher.value).toBe(2)
     waitForUpdate(() => {
       expect(watcher.value).toBe(3)
       expect(spy).toHaveBeenCalledWith(3, 2)
@@ -126,6 +127,7 @@ describe('Watcher', () => {
       expect(spy.calls.count()).toBe(1)
       Vue.delete(vm.b, 'e')
     }).then(() => {
+      expect(spy).toHaveBeenCalledWith(vm.b, vm.b)
       expect(spy.calls.count()).toBe(2)
     }).then(done)
   })

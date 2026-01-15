@@ -56,6 +56,33 @@ function sameInputType (a, b) {
   const typeB = isDef(i = b.data) && isDef(i = i.attrs) && i.type
   return typeA === typeB || isTextInputType(typeA) && isTextInputType(typeB)
 }
+// true || true && true // true
+// true || true && false // true
+// true || false && true // true
+// true || false && false // true
+// false || true && true // true
+// false || true && false // false
+// false || false && true // false
+// false || false && false // false
+
+// true || true && true // true
+// true || true && false // true
+// true || false && true // true
+// true || false && false // true
+// false || true && true // true
+// false || true && false // false
+// false || false && true // false
+// false || false && false // false
+
+// (true || true && true // true
+// (true || true && false // false
+// (true || false && true // true
+// (true || false && false // false
+// (false || true && true // true
+// (false || true && false // false
+// (false || false && true // false
+// (false || false && false // false
+
 
 function createKeyToOldIdx (children, beginIdx, endIdx) {
   let i, key

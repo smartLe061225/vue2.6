@@ -46,7 +46,13 @@ export function proxy (target: Object, sourceKey: string, key: string) {
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
-export function initState (vm: Component) {
+// 仅调用被文件src/core/instance/init.js的Vue.prototype._init方法，
+// 仅调用被文件src/platforms/weex/runtime/recycle-list/virtual-component.js的VirtualComponent.prototype._init方法
+export function initState (vm: Component) { // 初始化：选项/数据
+  // 用于存放实例上所有的Watcher实例：initState方法
+  // 每创建一个Watcher实例，就会将其实例添加到该数组中：Watcher构造函数
+  // 该数组会在每个Watcher实例调用teardown方法时，将其实例从该数组中移除：Watcher.prototype.teardown方法
+  // 该数组会在实例销毁时遍历调用每个Watcher实例的teardown方法进行销毁：vm.$destroy方法
   vm._watchers = []
   const opts = vm.$options
   if (opts.props) initProps(vm, opts.props)
@@ -151,7 +157,6 @@ function initData (vm: Component) {
   // observe data
   observe(data, true /* asRootData */)
 }
-
 export function getData (data: Function, vm: Component): any {
   // #7573 disable dep collection when invoking data getters
   pushTarget()
@@ -166,8 +171,8 @@ export function getData (data: Function, vm: Component): any {
 }
 
 const computedWatcherOptions = { lazy: true }
-
 function initComputed (vm: Component, computed: Object) {
+  // 属性_computedWatchers只在此处赋值并使用，且只在本文件的createComputedGetter方法中使用
   // $flow-disable-line
   const watchers = vm._computedWatchers = Object.create(null)
   // computed properties are just getters during SSR
@@ -209,7 +214,8 @@ function initComputed (vm: Component, computed: Object) {
     }
   }
 }
-
+// 仅调用被本文件的initState -> initComputed方法
+// 仅调用被Vue.extend -> initComputed方法：src/core/observer/watcher.js
 export function defineComputed (
   target: any,
   key: string,
@@ -240,7 +246,6 @@ export function defineComputed (
   }
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
-
 function createComputedGetter (key) {
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]
@@ -255,13 +260,13 @@ function createComputedGetter (key) {
     }
   }
 }
-
 function createGetterInvoker(fn) {
   return function computedGetter () {
     return fn.call(this, this)
   }
 }
 
+// 将定义的方法选项挂载为实例方法
 function initMethods (vm: Component, methods: Object) {
   const props = vm.$options.props
   for (const key in methods) {
@@ -280,16 +285,25 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
       if ((key in vm) && isReserved(key)) {
+        // in操作符也可检测遍历到原型上的属性/方法
+        // vm.hasOwnProperty('msg') // true
+        // vm.hasOwnProperty('$options') // true
+        // vm.hasOwnProperty('$mount') // false
+        // 'msg' in vm // true
+        // '$options' in vm // true
+        // '$mount' in vm // true
         warn(
           `Method "${key}" conflicts with an existing Vue instance method. ` +
           `Avoid defining component methods that start with _ or $.`
         )
       }
     }
+    // 当定义的方法选项不为函数时，将其赋值为空函数
     vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm)
   }
 }
 
+// 将定义的监听器选项采用原型方法$watch进行监听处理
 function initWatch (vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]

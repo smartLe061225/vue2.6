@@ -11,6 +11,7 @@ let warn
 export const RANGE_TOKEN = '__r'
 export const CHECKBOX_RADIO_TOKEN = '__c'
 
+// 仅引用被文件：./index.js
 export default function model (
   el: ASTElement,
   dir: ASTDirective,
@@ -64,6 +65,23 @@ export default function model (
   return true
 }
 
+function genSelect (
+  el: ASTElement,
+  value: string,
+  modifiers: ?ASTModifiers
+) {
+  const number = modifiers && modifiers.number
+  const selectedVal = `Array.prototype.filter` +
+    `.call($event.target.options,function(o){return o.selected})` +
+    `.map(function(o){var val = "_value" in o ? o._value : o.value;` +
+    `return ${number ? '_n(val)' : 'val'}})`
+
+  const assignment = '$event.target.multiple ? $$selectedVal : $$selectedVal[0]'
+  let code = `var $$selectedVal = ${selectedVal};`
+  code = `${code} ${genAssignmentCode(value, assignment)}`
+  addHandler(el, 'change', code, null, true)
+}
+
 function genCheckboxModel (
   el: ASTElement,
   value: string,
@@ -105,23 +123,6 @@ function genRadioModel (
   valueBinding = number ? `_n(${valueBinding})` : valueBinding
   addProp(el, 'checked', `_q(${value},${valueBinding})`)
   addHandler(el, 'change', genAssignmentCode(value, valueBinding), null, true)
-}
-
-function genSelect (
-  el: ASTElement,
-  value: string,
-  modifiers: ?ASTModifiers
-) {
-  const number = modifiers && modifiers.number
-  const selectedVal = `Array.prototype.filter` +
-    `.call($event.target.options,function(o){return o.selected})` +
-    `.map(function(o){var val = "_value" in o ? o._value : o.value;` +
-    `return ${number ? '_n(val)' : 'val'}})`
-
-  const assignment = '$event.target.multiple ? $$selectedVal : $$selectedVal[0]'
-  let code = `var $$selectedVal = ${selectedVal};`
-  code = `${code} ${genAssignmentCode(value, assignment)}`
-  addHandler(el, 'change', code, null, true)
 }
 
 function genDefaultModel (

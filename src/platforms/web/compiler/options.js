@@ -12,6 +12,8 @@ import directives from './directives/index'
 import { genStaticKeys } from 'shared/util'
 import { isUnaryTag, canBeLeftOpenTag } from './util'
 
+// 仅引用被文件：src/platforms/web/compiler/index.js
+// 仅引用被文件：src/platforms/web/server/compiler.js
 export const baseOptions: CompilerOptions = {
   expectHTML: true,
   modules,

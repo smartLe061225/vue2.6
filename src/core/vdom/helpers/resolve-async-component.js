@@ -15,18 +15,6 @@ import {
 import { createEmptyVNode } from 'core/vdom/vnode'
 import { currentRenderingInstance } from 'core/instance/render'
 
-function ensureCtor (comp: any, base) {
-  if (
-    comp.__esModule ||
-    (hasSymbol && comp[Symbol.toStringTag] === 'Module')
-  ) {
-    comp = comp.default
-  }
-  return isObject(comp)
-    ? base.extend(comp)
-    : comp
-}
-
 export function createAsyncPlaceholder (
   factory: Function,
   data: ?VNodeData,
@@ -162,4 +150,15 @@ export function resolveAsyncComponent (
       ? factory.loadingComp
       : factory.resolved
   }
+}
+function ensureCtor (comp: any, base) {
+  if (
+    comp.__esModule ||
+    (hasSymbol && comp[Symbol.toStringTag] === 'Module')
+  ) {
+    comp = comp.default
+  }
+  return isObject(comp)
+    ? base.extend(comp)
+    : comp
 }

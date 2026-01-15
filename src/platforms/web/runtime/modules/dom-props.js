@@ -77,7 +77,6 @@ function updateDOMProps (oldVnode: VNodeWithData, vnode: VNodeWithData) {
 
 // check platforms/web/util/attrs.js acceptValue
 type acceptValueElm = HTMLInputElement | HTMLSelectElement | HTMLOptionElement;
-
 function shouldUpdateValue (elm: acceptValueElm, checkVal: string): boolean {
   return (!elm.composing && (
     elm.tagName === 'OPTION' ||
@@ -85,7 +84,6 @@ function shouldUpdateValue (elm: acceptValueElm, checkVal: string): boolean {
     isDirtyWithModifiers(elm, checkVal)
   ))
 }
-
 function isNotInFocusAndDirty (elm: acceptValueElm, checkVal: string): boolean {
   // return true when textbox (.number and .trim) loses focus and its value is
   // not equal to the updated value
@@ -95,7 +93,6 @@ function isNotInFocusAndDirty (elm: acceptValueElm, checkVal: string): boolean {
   try { notInFocus = document.activeElement !== elm } catch (e) {}
   return notInFocus && elm.value !== checkVal
 }
-
 function isDirtyWithModifiers (elm: any, newVal: string): boolean {
   const value = elm.value
   const modifiers = elm._vModifiers // injected by v-model runtime
@@ -110,6 +107,7 @@ function isDirtyWithModifiers (elm: any, newVal: string): boolean {
   return value !== newVal
 }
 
+// 仅引用被文件：./index.js
 export default {
   create: updateDOMProps,
   update: updateDOMProps

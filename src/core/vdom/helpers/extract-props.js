@@ -48,7 +48,6 @@ export function extractPropsFromVNodeData (
   }
   return res
 }
-
 function checkProp (
   res: Object,
   hash: ?Object,

@@ -4,6 +4,17 @@ import { escape, noUnitNumericStyleProps } from '../util'
 import { hyphenate } from 'shared/util'
 import { getStyle } from 'web/util/style'
 
+
+// 仅引用被文件：./index.js
+export default function renderStyle (vnode: VNodeWithData): ?string {
+  const styleText = genStyle(getStyle(vnode, false))
+  if (styleText !== '') {
+    return ` style=${JSON.stringify(escape(styleText))}`
+  }
+}
+
+// 仅调用被本文件的renderStyle方法
+// 仅调用被renderSSRStyle方法：src/server/optimizing-compiler/runtime-helpers.js
 export function genStyle (style: Object): string {
   let styleText = ''
   for (const key in style) {
@@ -19,7 +30,6 @@ export function genStyle (style: Object): string {
   }
   return styleText
 }
-
 function normalizeValue(key: string, value: any): string {
   if (
     typeof value === 'string' ||
@@ -30,12 +40,5 @@ function normalizeValue(key: string, value: any): string {
   } else {
     // invalid values
     return ``
-  }
-}
-
-export default function renderStyle (vnode: VNodeWithData): ?string {
-  const styleText = genStyle(getStyle(vnode, false))
-  if (styleText !== '') {
-    return ` style=${JSON.stringify(escape(styleText))}`
   }
 }

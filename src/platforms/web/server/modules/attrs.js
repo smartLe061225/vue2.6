@@ -17,6 +17,7 @@ import {
 
 import { isSSRUnsafeAttr } from 'web/server/util'
 
+// 仅引用被文件：./index.js
 export default function renderAttrs (node: VNodeWithData): string {
   let attrs = node.data.attrs
   let res = ''
@@ -52,7 +53,9 @@ export default function renderAttrs (node: VNodeWithData): string {
   }
   return res
 }
-
+// 仅调用被本文件的renderAttrs方法
+// 仅调用被renderDOMProps方法：src/platforms/web/server/modules/dom-props.js
+// 仅调用被ssrHelpers属性 & renderAttrs方法 & renderDOMProps方法：src/server/optimizing-compiler/runtime-helpers.js
 export function renderAttr (key: string, value: string): string {
   if (isBooleanAttr(key)) {
     if (!isFalsyAttrValue(value)) {

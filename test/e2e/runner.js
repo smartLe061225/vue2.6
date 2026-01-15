@@ -18,6 +18,13 @@ const i = args.indexOf('--test')
 if (i > -1) {
   args[i + 1] = 'test/e2e/specs/' + args[i + 1] + '.js'
 }
+// console.log('args: ', args)
+// node ./test/e2e/runner.js
+// args: ['--config.js', 'test/e2e/nightwatch.config.js', '--env', 'chrome,phantomjs']
+// node ./test/e2e/runner.js --test tree
+// args: ['--test', 'test/e2e/specs/tree.js', '--config', 'test/e2e/nightwatch.config.js', '--env', 'chrome,phantomjs']
+// node ./test/e2e/runner.js --test
+// args: ['--test', 'test/e2e/specs/--config.js', 'test/e2e/nightwatch.config.js', '--env', 'chrome,phantomjs']
 
 const runner = spawn('./node_modules/.bin/nightwatch', args, {
   stdio: 'inherit'

@@ -10,10 +10,10 @@ export const isReservedAttr = makeMap('style,class')
 const acceptValue = makeMap('input,textarea,option,select,progress')
 export const mustUseProp = (tag: string, type: ?string, attr: string): boolean => {
   return (
-    (attr === 'value' && acceptValue(tag)) && type !== 'button' ||
-    (attr === 'selected' && tag === 'option') ||
-    (attr === 'checked' && tag === 'input') ||
-    (attr === 'muted' && tag === 'video')
+    (attr === 'value' && acceptValue(tag)) && type !== 'button' || // <input/textarea/select/option/progress value="msg">
+    (attr === 'selected' && tag === 'option') || // <option selected>
+    (attr === 'checked' && tag === 'input') || // <input type="checkbox|radio" checked>
+    (attr === 'muted' && tag === 'video') // <video muted>
   )
 }
 
@@ -50,5 +50,5 @@ export const getXlinkProp = (name: string): string => {
 }
 
 export const isFalsyAttrValue = (val: any): boolean => {
-  return val == null || val === false
+  return val == null || val === false // undefined null false
 }

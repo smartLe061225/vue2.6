@@ -65,7 +65,6 @@ function prependModifierMarker (symbol: string, name: string, dynamic?: boolean)
     ? `_p(${name},"${symbol}")`
     : symbol + name // mark the event as captured
 }
-
 export function addHandler (
   el: ASTElement,
   name: string,
@@ -107,6 +106,19 @@ export function addHandler (
       name = 'mouseup'
     }
   }
+  // 浏览器原生点击事件：
+  // document.body.addEventListener('click', (evt) => {
+  // evt.preventDefault()
+  //   console.error('鼠标左键松开时触发')
+  // })
+  // document.body.addEventListener('contextmenu', (evt) => {
+  //   evt.preventDefault()
+  //   console.error('鼠标右键按下时触发')
+  // })
+  // document.body.addEventListener('mouseup', (evt) => {
+  //   evt.preventDefault()
+  //   console.error('鼠标左键和中键松开时触发')
+  // })
 
   // check capture modifier
   if (modifiers.capture) {
@@ -149,6 +161,21 @@ export function addHandler (
   el.plain = false
 }
 
+function rangeSetItem (
+  item: any,
+  range?: { start?: number, end?: number }
+) {
+  if (range) {
+    if (range.start != null) {
+      item.start = range.start
+    }
+    if (range.end != null) {
+      item.end = range.end
+    }
+  }
+  return item
+}
+
 export function getRawBindingAttr (
   el: ASTElement,
   name: string
@@ -168,14 +195,13 @@ export function getBindingAttr (
     getAndRemoveAttr(el, 'v-bind:' + name)
   if (dynamicValue != null) {
     return parseFilters(dynamicValue)
-  } else if (getStatic !== false) {
+  } else if (getStatic !== false) { // 非动态绑定的attrs会进行JSON字符串序列号
     const staticValue = getAndRemoveAttr(el, name)
     if (staticValue != null) {
       return JSON.stringify(staticValue)
     }
   }
 }
-
 // note: this only removes the attr from the Array (attrsList) so that it
 // doesn't get processed by processAttrs.
 // By default it does NOT remove it from the map (attrsMap) because the map is
@@ -215,17 +241,4 @@ export function getAndRemoveAttrByRegex (
   }
 }
 
-function rangeSetItem (
-  item: any,
-  range?: { start?: number, end?: number }
-) {
-  if (range) {
-    if (range.start != null) {
-      item.start = range.start
-    }
-    if (range.end != null) {
-      item.end = range.end
-    }
-  }
-  return item
-}
+

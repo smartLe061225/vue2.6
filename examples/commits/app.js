@@ -29,9 +29,13 @@ new Vue({
       var newline = v.indexOf('\n')
       return newline > 0 ? v.slice(0, newline) : v
     },
+    // truncate('abc\nde') // 'abc'
+    // truncate(`abc
+    // de`) // 'abc'
     formatDate: function (v) {
       return v.replace(/T|Z/g, ' ')
     }
+    // formatDate('abTdcdZefTZghZTij') // 'ab dcd ef  gh  ij'
   },
 
   methods: {
@@ -46,6 +50,7 @@ new Vue({
         var xhr = new XMLHttpRequest()
         xhr.open('GET', apiURL + self.currentBranch)
         xhr.onload = function () {
+          console.log('---xhr.responseText---', xhr.responseText)
           self.commits = JSON.parse(xhr.responseText)
           console.log(self.commits[0].html_url)
         }
